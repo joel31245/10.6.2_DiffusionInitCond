@@ -53,7 +53,7 @@ void implicitNOTESfillRow( double[tSize][xSize], int );
 // DISPLAY FUNCTION
 void printAll( double u[tSize][xSize] );
 // EXACT FUNCTION
-double exact( double t, double x ){ return exp(-pow((n-.5),2)*M_PI*t) * cos((n-.5)*x); }
+double exact( double t, double x ){ return exp(-pow((n-.5),2)*t) * cos((n-.5)*x); }
 
 int main()
 {
