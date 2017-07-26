@@ -111,29 +111,29 @@ void printAll( double u[tSize][xSize] ){
 
     for( i=0; i<tSize; i++ ){
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("ESTIMATE:\t");
-            printf("%lf\t", u[i][j] );
+            if( j==0 && i<3 )printf("ESTIMATE:\t");
+            if (i<3) printf("%lf\t", u[i][j] );
             fprintf(bf,"%lf,", u[i][j]);
         }
         fprintf(bf,"\n");
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("\nACTUAL:\t\t");
-            printf("%lf\t", exact(i*dt, j*dx) );
+            if( j==0 && i<3)printf("\nACTUAL:\t\t");
+            if (i<3) printf("%lf\t", exact(i*dt, j*dx) );
             fprintf(abf, "%lf,", exact(i*dt, j*dx) );
         }
         fprintf(abf, "\n" );
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("\nERROR:\t\t");
+            if( j==0 && i<3)printf("\nERROR:\t\t");
             error = fabs(exact(i*dt, j*dx)-u[i][j])/exact(i*dt, j*dx) *100;
             if( u[i][j] == 0 && ( j==0 || j==xSize-1) ) error = 0.0;
-            printf("%lf\t", error );
+            if (i<3) printf("%lf\t", error );
             fprintf(ef, "%lf,", error );
         }
         fprintf(ef, "\n");
 
-        printf("\n\n\n\n");
+        if (i<3) printf("\n\n\n\n");
     }
 
     fclose(ef);
@@ -176,7 +176,7 @@ void implicitNOTESfillRow( double u[tSize][xSize], int t){
 
     /* STEP B: FORWARD THROUGH THE alpha's AND g's */
     alpha[1] = a;
-    g[1] = u[t-1][1];
+    g[1] = u[t-1][0];
 
     for( j=2; j<N; j++ ){
         alpha[j] = a - (b*c)/alpha[j-1];

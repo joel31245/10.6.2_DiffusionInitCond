@@ -9,33 +9,33 @@ Eerror = csvread('ExplicitERROR.csv');
 % E8error = csvread('Explicit8ERROR.csv');
 
 
-figure(1);
-% Actual Plot 
-subplot(1,3,1);
-mesh(Eactual);
-xlim([0 12.5]);
-title('Actual');
-xlabel('X Value Index');
-ylabel('Time Index');
-zlabel('U Values');
-
-% Explicit Estimate Plot
-subplot(1,3,2);
-mesh(Eestimate);
-xlim([0 12.5]);
-title('Explicit Estimate');
-xlabel('X Value Index');
-ylabel('Time Index');
-zlabel('U Values');
-
-% Explicit Estimate Error
-subplot(1,3,3);
-mesh(Eerror);
-xlim([0 12.5]);
-title('Explicit Error');
-xlabel('X Value Index');
-ylabel('Time Index');
-zlabel('% Error');
+% figure(1);
+% % Actual Plot 
+% subplot(1,3,1);
+% mesh(Eactual);
+% xlim([0 12.5]);
+% title('Actual');
+% xlabel('X Value Index');
+% ylabel('Time Index');
+% zlabel('U Values');
+% 
+% % Explicit Estimate Plot
+% subplot(1,3,2);
+% mesh(Eestimate);
+% xlim([0 12.5]);
+% title('Explicit Estimate');
+% xlabel('X Value Index');
+% ylabel('Time Index');
+% zlabel('U Values');
+% 
+% % Explicit Estimate Error
+% subplot(1,3,3);
+% mesh(Eerror);
+% xlim([0 12.5]);
+% title('Explicit Error');
+% xlabel('X Value Index');
+% ylabel('Time Index');
+% zlabel('% Error');
 
 % % Explicit Estimate .8
 % subplot(2,3,5);
