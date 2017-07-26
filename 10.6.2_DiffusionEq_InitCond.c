@@ -83,10 +83,10 @@ int main()
         /* STEP 2: Boundary Conditions for Next time Step */
             boundaryConditions( U, i );
         /* STEP 3: Filling in the rest of the current time Step */
-            if( whichMethod == '1' ) ExplicitfillRow( U, i ); // Explicit
+            if     ( whichMethod == '1' ) ExplicitfillRow( U, i ); // Explicit
             else if( whichMethod == '2' ) implicitNOTESfillRow( U, i );// Implicit
             else if( whichMethod == '3' ) CNfillRow( U, i );// CN
-            else if( whichMethod == '4' ) printf("Method under construction.");// GaussSliedel
+            else if( whichMethod == '4' ) gaussSliedelfillRow( U, i );// GaussSliedel
         }
 
 

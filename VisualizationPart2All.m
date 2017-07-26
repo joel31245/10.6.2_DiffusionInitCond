@@ -124,7 +124,7 @@ Eerror = csvread('CNERROR.csv');
 % E8error = csvread('Implicit8ERROR.csv');
 
 
-figure(2);
+figure(3);
 % Actual Plot 
 subplot(1,3,1);
 mesh(Eactual);
@@ -166,6 +166,63 @@ zlabel('% Error');
 % mesh(E8error);
 % xlim([0 11.5]);
 % title('Crank-Nicolson .8 ERROR');
+% xlabel('X Value Index');
+% ylabel('Time Index');
+% zlabel('% Error');
+
+
+%% Visualization of 10.6.2.3 Gauss Sliedel Method 
+
+Eactual = csvread('GaussBLOCKACTUAL.csv');
+
+Eestimate = csvread('GaussBLOCK.csv');
+Eerror = csvread('GaussERROR.csv');
+% E8estimate = csvread('Gauss8BLOCK.csv');
+% E8error = csvread('Gauss8ERROR.csv');
+
+
+figure(4);
+% Actual Plot 
+subplot(1,3,1);
+mesh(Eactual);
+xlim([0 12.5]);
+title('Actual');
+xlabel('X Value Index');
+ylabel('Time Index');
+zlabel('U Values');
+
+% Crank-Nicolson Estimate Plot
+subplot(1,3,2);
+mesh(Eestimate);
+xlim([0 12.5]);
+title('Gauss-Sliedel Estimate');
+xlabel('X Value Index');
+ylabel('Time Index');
+zlabel('U Values');
+
+% Crank-Nicolson Estimate Error
+subplot(1,3,3);
+mesh(Eerror);
+xlim([0 12.5]);
+title('Gauss-Sliedel Error');
+xlabel('X Value Index');
+ylabel('Time Index');
+zlabel('% Error');
+
+% % Crank-Nicolson Estimate .8
+% subplot(2,3,5);
+% mesh(E8estimate);
+% xlim([0 11.5]);
+% title('Gauss-Sliedel .8 Estimate');
+% xlabel('X Value Index');
+% ylabel('Time Index');
+% zlabel('U Values');
+% 
+% % Crank-Nicolson .8 Error
+% subplot(2,3,6);
+% mesh(E8error);
+% xlim([0 11.5]);
+% title('Gauss-Sliedel .8 ERROR');
 % xlabel('X Value Index');
 % ylabel('Time Index');
 % zlabel('% Error');
