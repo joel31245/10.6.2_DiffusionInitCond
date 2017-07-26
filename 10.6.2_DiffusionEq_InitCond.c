@@ -24,6 +24,7 @@
 #define lam .4
 #define dx (M_PI/10)
 #define dt (lam/D*dx*dx)
+#define K 1000
 int xSize = (double)xEND/dx +1;
 int tSize = (double)tEND/dt +1;
 
@@ -45,11 +46,12 @@ char whichMethod = '1';
 // MINI FUNCTION SET TO 0 BY DEFAULT CONDITIONS defined by problem
 double F( double t, double x ){ return 0; }
 // STEPWISE COMPUTATIONAL FUNCTIONS
-void initializeU( double u[xSize][tSize] );
+void initializeU( double u[xSize][tSize],int );
 void boundaryConditions( double u[tSize][xSize], int tRow );
 void ExplicitfillRow( double[tSize][xSize], int );
 void implicitNOTESfillRow( double[tSize][xSize], int );
-//void CNfillRow( double[tSize][xSize], int );
+void CNfillRow( double[tSize][xSize], int );
+void gaussSliedelfillRow( double[tSize][xSize], int );
 // DISPLAY FUNCTION
 void printAll( double u[tSize][xSize] );
 // EXACT FUNCTION
@@ -61,7 +63,7 @@ int main()
 
     while (continu == 'y'){
 
-        printf("Please Enter which method to compute the Diffusion Equation:\n(1 - Explicit)\t(2 - Implicit)\t(3 - Crank-Nicolson)\t(4 - Jacobi):\t");
+        printf("Please Enter which method to compute the Diffusion Equation:\n(1 - Explicit)\t(2 - Implicit)\t(3 - Crank-Nicolson)\t(4 - GaussSliedel):\t");
         scanf(" %c", &whichMethod);
 
         printf("Please Enter the file name in which these values will be stored: \n");
@@ -74,7 +76,7 @@ int main()
         strcat(fileNameBlockActualCSV, "BLOCKACTUAL.csv");
 
         /* STEP 1: Set the initial U at t=0 for the length of the beam x: 0->PI */
-        initializeU( U );
+        initializeU( U, 0 );
 
         int i; // goes through all the time steps
         for( i=1; i<tSize; i++ ){
@@ -83,8 +85,8 @@ int main()
         /* STEP 3: Filling in the rest of the current time Step */
             if( whichMethod == '1' ) ExplicitfillRow( U, i ); // Explicit
             else if( whichMethod == '2' ) implicitNOTESfillRow( U, i );// Implicit
-            else if( whichMethod == '3' ) printf("Method under construction.");// CN
-            else if( whichMethod == '4' ) printf("Method under construction.");// Jacobi
+            else if( whichMethod == '3' ) CNfillRow( U, i );// CN
+            else if( whichMethod == '4' ) printf("Method under construction.");// GaussSliedel
         }
 
 
@@ -111,29 +113,29 @@ void printAll( double u[tSize][xSize] ){
 
     for( i=0; i<tSize; i++ ){
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("ESTIMATE:\t");
-            printf("%lf\t", u[i][j] );
+            if( j==0 &&i<3 )printf("ESTIMATE:\t");
+            if( i<3) printf("%lf\t", u[i][j] );
             fprintf(bf,"%lf,", u[i][j]);
         }
         fprintf(bf,"\n");
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("\nACTUAL:\t\t");
-            printf("%lf\t", exact(i*dt, j*dx) );
+            if( j==0 &&i<3)printf("\nACTUAL:\t\t");
+            if (i<3) printf("%lf\t", exact(i*dt, j*dx) );
             fprintf(abf, "%lf,", exact(i*dt, j*dx) );
         }
         fprintf(abf, "\n" );
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 )printf("\nERROR:\t\t");
+            if( j==0 &&i<3)printf("\nERROR:\t\t");
             error = fabs(exact(i*dt, j*dx)-u[i][j])/exact(i*dt, j*dx) *100;
             if( u[i][j] == 0 && ( j==0 || j==xSize-1) ) error = 0.0;
-            printf("%lf\t", error );
+            if (i<3) printf("%lf\t", error );
             fprintf(ef, "%lf,", error );
         }
         fprintf(ef, "\n");
 
-        printf("\n\n\n\n");
+        if (i<3) printf("\n\n\n\n");
     }
 
     fclose(ef);
@@ -143,14 +145,14 @@ void printAll( double u[tSize][xSize] ){
 }
 
 
-void initializeU( double u[tSize][xSize] ){
+void initializeU( double u[tSize][xSize], int t ){
     int i;
     for( i=0; i<xSize; i++ ){
-        u[0][i] = cos((n-.5)*i*dx);
+        u[t][i] = cos((n-.5)*i*dx);
     }
 }
 void boundaryConditions( double u[tSize][xSize], int t ){
-    u[t][0] = 0;
+    //u[t][0] = 0;
 
     u[t][xSize-1] = 0;
 }
@@ -183,14 +185,15 @@ void implicitNOTESfillRow( double u[tSize][xSize], int t){
         g[j] =  u[t-1][j] - (b/alpha[j-1])*g[j-1];
     }
 
+
     /* STEP C: BACKWARD THROUGH u[t][j] */
     // Starting 1 below max because the end is set to 0 by "boundaryConditions" as it should be
     u[t][xSize-2] = g[N-1]/alpha[N-1];
-    //printf("g[Size] = %lf\n\n", g[xSize-2]);
+
     for( j=N-2; j>0; j-- )
         u[t][j] = ( g[j] - c*u[t][j+1] )/alpha[j];
 
-    // Initial Column for Row since boundary no longer determines it. BUT does not get used until next time step becuase of how the implicit method works
+    // Initial Column for Row since boundary no longer determines it.
     u[t][0] = ( g[0] - 2*c*u[t][1] )/alpha[0];
 }
 
@@ -198,16 +201,19 @@ void implicitNOTESfillRow( double u[tSize][xSize], int t){
 void CNfillRow( double u[tSize][xSize], int t){
     /* STEP A: SETTING UP THE Tridiagonal */
     int N = xSize-1;
-    double alpha[N], a=1+lam, b=-lam/2, c=-lam/2, g[N]; int j;
+    double alpha[N], a=1+lam, b=-lam/2.0, c=-lam/2.0, g[N]; int j;
+
 
     /* STEP B: FORWARD THROUGH THE alpha's AND g's */
-    alpha[1] = a;
-    g[1] = ( lam/2.0*u[t-1][0] + (1-lam)*u[t-1][1] + lam/2.0*u[t-1][2] );
+    alpha[0] = a;
+    g[0] = ( lam/2.0*u[t-1][1] + (1-lam)*u[t-1][0] + lam/2.0*u[t-1][1] );
 
-    for( j=2; j<N; j++ ){
-        alpha[j] = a - (b*c)/alpha[j-1];
+    for( j=1; j<N; j++ ){
+        if( j==1 ) alpha[j] = a - (2*b*c)/alpha[j-1];
+        else alpha[j] = a - (b*c)/alpha[j-1];
         g[j] = ( ( lam/2.0*u[t-1][j-1] + (1-lam)*u[t-1][j] + lam/2.0*u[t-1][j+1] ) - (b/alpha[j-1]*g[j-1]) );
     }
+
 
     /* STEP C: BACKWARD THROUGH u[t][j] */
     // Starting 2 below max because the end is set to 0 by "boundaryConditions" as it should be
@@ -215,6 +221,36 @@ void CNfillRow( double u[tSize][xSize], int t){
 
     for( j=N-2; j>0; j-- ){
         u[t][j] = ( g[j] - c*u[t][j+1] )/alpha[j];
+    }
+
+    // Initial Column for Row since boundary no longer determines it.
+    u[t][j] = ( g[j] - 2*c*u[t][j+1] )/alpha[j];
+}
+
+void gaussSliedelfillRow( double u[tSize][xSize], int t){
+    /* STEP A: SETTING UP THE Variables for gaussSliedel */
+        // In Reality the a b and c would be a non tridiagonal matrix and they wouldnt be constant
+    double a=1+ 2*lam, b=-lam, c=-lam, f; int j; int k;
+    double uT[xSize];
+
+    // Fill with the guess
+    initializeU( u, t );
+
+    // Fill the temporary array for the k iterations
+    for( j=0; j<xSize; j++){
+         uT[j] = u[t][j];
+    }
+
+    // Actual Gauss Formula for k iterations with the temporary array loaded
+    for( k=0; k<K; k++)
+        for( j=1; j<xSize-1; j++){
+            f = u[t-1][j];
+            uT[j] = (f -( b*uT[j-1] + c*uT[j+1] ) )/a;
+        }
+
+    // Copying the temporary value back to the actual array
+    for( j=0; j<xSize-1; j++){
+        u[t][j] = uT[j];
     }
 
 }
