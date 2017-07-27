@@ -24,7 +24,7 @@
 #define lam .4
 #define dx (M_PI/10)
 #define dt (lam/D*dx*dx)
-#define K 1000
+#define K 10
 int xSize = (double)xEND/dx +1;
 int tSize = (double)tEND/dt +1;
 
@@ -113,29 +113,29 @@ void printAll( double u[tSize][xSize] ){
 
     for( i=0; i<tSize; i++ ){
         for( j=0; j<xSize; j++ ){
-            if( j==0 &&i<3 )printf("ESTIMATE:\t");
-            if( i<3) printf("%lf\t", u[i][j] );
+            if( j==0 )printf("ESTIMATE:\t");
+            printf("%lf\t", u[i][j] );
             fprintf(bf,"%lf,", u[i][j]);
         }
         fprintf(bf,"\n");
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 &&i<3)printf("\nACTUAL:\t\t");
-            if (i<3) printf("%lf\t", exact(i*dt, j*dx) );
+            if( j==0 )printf("\nACTUAL:\t\t");
+            printf("%lf\t", exact(i*dt, j*dx) );
             fprintf(abf, "%lf,", exact(i*dt, j*dx) );
         }
         fprintf(abf, "\n" );
 
         for( j=0; j<xSize; j++ ){
-            if( j==0 &&i<3)printf("\nERROR:\t\t");
+            if( j==0 )printf("\nERROR:\t\t");
             error = fabs(exact(i*dt, j*dx)-u[i][j])/exact(i*dt, j*dx) *100;
-            if( u[i][j] == 0 && ( j==0 || j==xSize-1) ) error = 0.0;
-            if (i<3) printf("%lf\t", error );
+            if( u[i][j] == 0 || ( j==0 || j==xSize-1) ) error = 0.0;
+            printf("%lf\t", error );
             fprintf(ef, "%lf,", error );
         }
         fprintf(ef, "\n");
 
-        if (i<3) printf("\n\n\n\n");
+        printf("\n\n\n\n");
     }
 
     fclose(ef);
@@ -242,11 +242,15 @@ void gaussSliedelfillRow( double u[tSize][xSize], int t){
     }
 
     // Actual Gauss Formula for k iterations with the temporary array loaded
-    for( k=0; k<K; k++)
+
+    for( k=0; k<K; k++){
+        f = u[t-1][0];
+        uT[0] = (f - b*uT[1] - c*uT[1] )/a;
         for( j=1; j<xSize-1; j++){
             f = u[t-1][j];
             uT[j] = (f -( b*uT[j-1] + c*uT[j+1] ) )/a;
         }
+    }
 
     // Copying the temporary value back to the actual array
     for( j=0; j<xSize-1; j++){
